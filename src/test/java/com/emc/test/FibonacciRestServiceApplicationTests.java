@@ -50,4 +50,38 @@ public class FibonacciRestServiceApplicationTests {
 		.andExpect(content().bytes("Invalid number - a".getBytes()));
 	}
 
+	@Test
+	public void verifyFibonacciForInput0() throws Exception {
+		restFibonacciMvc.perform(get("/v1/rest/fibonacci/0"))
+				.andExpect(status().isOk())
+				.andExpect(content().bytes("0 ".getBytes()));
+	}
+
+	@Test
+	public void verifyFibonacciForInput1() throws Exception {
+		restFibonacciMvc.perform(get("/v1/rest/fibonacci/1"))
+				.andExpect(status().isOk())
+				.andExpect(content().bytes("0 1 ".getBytes()));
+	}
+
+	@Test
+	public void verifyFibonacciForInput2() throws Exception {
+		restFibonacciMvc.perform(get("/v1/rest/fibonacci/2"))
+				.andExpect(status().isOk())
+				.andExpect(content().bytes("0 1 1 ".getBytes()));
+	}
+
+	@Test
+	public void verifyFibonacciForInput10() throws Exception {
+		restFibonacciMvc.perform(get("/v1/rest/fibonacci/10"))
+				.andExpect(status().isOk())
+				.andExpect(content().bytes("0 1 1 2 3 5 8 13 21 34 ".getBytes()));
+	}
+
+	@Test
+	public void verifyFibonacciForInput20() throws Exception {
+		restFibonacciMvc.perform(get("/v1/rest/fibonacci/20"))
+				.andExpect(status().isOk())
+				.andExpect(content().bytes("0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 ".getBytes()));
+	}
 }
