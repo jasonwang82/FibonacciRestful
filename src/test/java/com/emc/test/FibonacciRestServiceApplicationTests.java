@@ -1,5 +1,9 @@
 /**
- * @author Jason.Wang
+ * This class contains test cases for the FibonacciRestServiceApplication.
+ * It uses the MockMvc framework to test the FibonacciCalculationResource class.
+ * The test cases verify the Fibonacci calculation for various inputs.
+ * 
+ * Author: Jason.Wang
  */
 package com.emc.test;
 
@@ -34,9 +38,12 @@ public class FibonacciRestServiceApplicationTests {
 		this.restFibonacciMvc = MockMvcBuilders.standaloneSetup(cal).build();
 	}
 
+	/**
+	 * Test case to verify the Fibonacci calculation for input 7.
+	 * It expects the output to be "0 1 1 2 3 5 8 ".
+	 */
 	@Test
 	public void verifyFibonacci() throws Exception {
-
 		restFibonacciMvc.perform(get("/v1/rest/fibonacci/7"))
 				.andExpect(status().isOk())
 				.andExpect(content().bytes("0 1 1 2 3 5 8 ".getBytes()));
@@ -50,6 +57,10 @@ public class FibonacciRestServiceApplicationTests {
 		.andExpect(content().bytes("Invalid number - a".getBytes()));
 	}
 
+	/**
+	 * Test case to verify the Fibonacci calculation for input 0.
+	 * It expects the output to be "0 ".
+	 */
 	@Test
 	public void verifyFibonacciForInput0() throws Exception {
 		restFibonacciMvc.perform(get("/v1/rest/fibonacci/0"))
@@ -57,6 +68,10 @@ public class FibonacciRestServiceApplicationTests {
 				.andExpect(content().bytes("0 ".getBytes()));
 	}
 
+	/**
+	 * Test case to verify the Fibonacci calculation for input 1.
+	 * It expects the output to be "0 1 ".
+	 */
 	@Test
 	public void verifyFibonacciForInput1() throws Exception {
 		restFibonacciMvc.perform(get("/v1/rest/fibonacci/1"))
@@ -64,6 +79,10 @@ public class FibonacciRestServiceApplicationTests {
 				.andExpect(content().bytes("0 1 ".getBytes()));
 	}
 
+	/**
+	 * Test case to verify the Fibonacci calculation for input 2.
+	 * It expects the output to be "0 1 1 ".
+	 */
 	@Test
 	public void verifyFibonacciForInput2() throws Exception {
 		restFibonacciMvc.perform(get("/v1/rest/fibonacci/2"))
@@ -71,6 +90,10 @@ public class FibonacciRestServiceApplicationTests {
 				.andExpect(content().bytes("0 1 1 ".getBytes()));
 	}
 
+	/**
+	 * Test case to verify the Fibonacci calculation for input 10.
+	 * It expects the output to be "0 1 1 2 3 5 8 13 21 34 ".
+	 */
 	@Test
 	public void verifyFibonacciForInput10() throws Exception {
 		restFibonacciMvc.perform(get("/v1/rest/fibonacci/10"))
@@ -78,6 +101,10 @@ public class FibonacciRestServiceApplicationTests {
 				.andExpect(content().bytes("0 1 1 2 3 5 8 13 21 34 ".getBytes()));
 	}
 
+	/**
+	 * Test case to verify the Fibonacci calculation for input 20.
+	 * It expects the output to be "0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 ".
+	 */
 	@Test
 	public void verifyFibonacciForInput20() throws Exception {
 		restFibonacciMvc.perform(get("/v1/rest/fibonacci/20"))

@@ -118,3 +118,26 @@ Then you can GET http://localhost:9000/v1/rest/fibonacci/:id
 
   * **Code:** 400 <br />
     **Content:** `Invalid number - :id`
+
+### Test Cases
+
+The test suite for the FibonacciRestServiceApplication includes the following test cases:
+
+1. **verifyFibonacci**: Verifies the Fibonacci calculation for input 7. Expects the output to be "0 1 1 2 3 5 8 ".
+2. **verifyFibonacciForInput0**: Verifies the Fibonacci calculation for input 0. Expects the output to be "0 ".
+3. **verifyFibonacciForInput1**: Verifies the Fibonacci calculation for input 1. Expects the output to be "0 1 ".
+4. **verifyFibonacciForInput2**: Verifies the Fibonacci calculation for input 2. Expects the output to be "0 1 1 ".
+5. **verifyFibonacciForInput10**: Verifies the Fibonacci calculation for input 10. Expects the output to be "0 1 1 2 3 5 8 13 21 34 ".
+6. **verifyFibonacciForInput20**: Verifies the Fibonacci calculation for input 20. Expects the output to be "0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 ".
+7. **verifyFibonacciForNegativeInput**: Verifies the Fibonacci calculation for invalid negative input. Expects the output to be "Invalid number - -1".
+8. **verifyFibonacciForNonNumericInput**: Verifies the Fibonacci calculation for invalid non-numeric input. Expects the output to be "Invalid number - a".
+
+### Running the Tests
+
+To run the tests, use the following command:
+
+```sh
+$ mvn test
+```
+
+The tests will be executed, and the results will be displayed in the console.
