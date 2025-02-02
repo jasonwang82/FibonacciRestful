@@ -31,6 +31,8 @@ public class FibonacciCalculationResource {
 	private final Logger log = LoggerFactory
 			.getLogger(FibonacciCalculationResource.class);
 	
+	private final OptimizedFibonacciCalculator calculator = new OptimizedFibonacciCalculator();
+	
 	/**
 	 * GET /rest/fibonacci/:id -> get the "id" calucalation number.
 	 */
@@ -42,34 +44,13 @@ public class FibonacciCalculationResource {
 			return new ResponseEntity<>("Invalid number - " + id,
 					HttpStatus.BAD_REQUEST);
 		}
-		String folderName = ConfigurationUtils.generateUUID();
-
-		ProcessRunner.run(ConfigurationUtils.getExecutionTimeout(),
-				new String[] { FibonacciPartThread.class.getName(), id,
-						folderName });
-		int threadNum = FibonacciPartThread.getCountThread(Integer.valueOf(id));
-		if (threadNum == NioFileSystemUtils.countInFolder(folderName)) {
-			StringBuffer sb = new StringBuffer();
-			try {
-				for (int i = 0; i < threadNum; i++) {
-					sb.append(
-							NioFileSystemUtils.readByNIO(folderName + "/f.p"
-									+ i)).append(" ");
-				}
-			} catch (Exception e) {
-				log.error(e.getMessage(), e);
-				return new ResponseEntity<>("Please contact administator. ",
-						HttpStatus.REQUEST_TIMEOUT);
-			}
-			try {
-				NioFileSystemUtils.deleteFolder(folderName);
-			} catch (Exception e) {
-				log.error(e.getMessage(), e);
-			}
-			return new ResponseEntity<>(sb.toString().substring(0,
-					sb.length() - 1), HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>("Please contact administator. ",
+		
+		try {
+			BigInteger result = calculator.calculate(Integer.parseInt(id));
+			return new ResponseEntity<>(result.toString(), HttpStatus.OK);
+		} catch (Exception e) {
+			log.error("Error calculating Fibonacci number", e);
+			return new ResponseEntity<>("Error calculating Fibonacci number",
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
