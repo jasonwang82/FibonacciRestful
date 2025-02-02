@@ -10,11 +10,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import com.emc.test.rest.dto.BatchFibonacciRequest;
+import com.emc.test.rest.dto.BatchFibonacciResponse;
+
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import com.emc.test.common.utils.ConfigurationUtils;
 import com.emc.test.common.utils.NioFileSystemUtils;
@@ -69,4 +73,42 @@ public class FibonacciCalculationResource {
 		}
 	}
 
+    /**
+     * POST /rest/fibonacci/batch -> Calculate multiple Fibonacci numbers in batch
+     */
+    @RequestMapping(value = "/rest/fibonacci/batch", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<BatchFibonacciResponse> calculateBatch(@RequestBody BatchFibonacciRequest request) {
+        Map<Integer, String> results = new HashMap<>();
+        Map<Integer, String> errors = new HashMap<>();
+
+        request.getNumbers().parallelStream().forEach(number -> {
+            try {
+                results.put(number, calculator.calculate(number).toString());
+            } catch (Exception e) {
+                errors.put(number, e.getMessage());
+            }
+        });
+
+        return new ResponseEntity<>(new BatchFibonacciResponse(results, errors), HttpStatus.OK);
+    }
+
+    /**
+     * GET /rest/fibonacci/async/{id} -> Calculate Fibonacci number asynchronously
+     */
+    @RequestMapping(value = "/rest/fibonacci/async/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody CompletableFuture<ResponseEntity<String>> getAsync(@PathVariable String id) {
+        return CompletableFuture.supplyAsync(() -> {
+            if (!validation(id)) {
+                return new ResponseEntity<>("Invalid number - " + id, HttpStatus.BAD_REQUEST);
+            }
+
+            try {
+                BigInteger result = calculator.calculate(Integer.parseInt(id));
+                return new ResponseEntity<>(result.toString(), HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("Error calculating Fibonacci number", e);
+                return new ResponseEntity<>("Error calculating Fibonacci number", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        });
+    }
 }
