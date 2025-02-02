@@ -45,12 +45,12 @@ public class FibonacciCalculationResource {
 	 * GET /rest/fibonacci/:id -> get the "id" calucalation number.
 	 */
 	@RequestMapping(value = "/rest/fibonacci/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@io.github.resilience4j.ratelimiter.annotation.RateLimiter(name = "fibonacci-api")
 	public @ResponseBody ResponseEntity<String> get(@PathVariable String id,
 			HttpServletResponse response) {
 		log.debug("REST request to calculate fibonacci : {}", id);
 		if (!validation(id)) {
-			return new ResponseEntity<>("Invalid number - " + id,
-					HttpStatus.BAD_REQUEST);
+			throw new IllegalArgumentException("Invalid number - " + id);
 		}
 		
 		try {
@@ -108,7 +108,7 @@ public class FibonacciCalculationResource {
     public @ResponseBody CompletableFuture<ResponseEntity<String>> getAsync(@PathVariable String id) {
         return CompletableFuture.supplyAsync(() -> {
             if (!validation(id)) {
-                return new ResponseEntity<>("Invalid number - " + id, HttpStatus.BAD_REQUEST);
+                throw new IllegalArgumentException("Invalid number - " + id);
             }
 
             try {

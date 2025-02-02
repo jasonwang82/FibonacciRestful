@@ -42,6 +42,9 @@ public class FibonacciService {
 
     @Transactional
     public BigInteger calculateFibonacci(int n) {
+        if (n > 1000) {
+            throw new IllegalArgumentException("Input too large. Maximum allowed value is 1000");
+        }
         long startTime = System.currentTimeMillis();
         try {
             totalCalculations++;
