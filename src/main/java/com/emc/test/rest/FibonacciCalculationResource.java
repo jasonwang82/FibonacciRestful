@@ -99,6 +99,11 @@ public class FibonacciCalculationResource {
     /**
      * GET /rest/fibonacci/async/{id} -> Calculate Fibonacci number asynchronously
      */
+    @RequestMapping(value = "/rest/fibonacci/stats", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<StatsResponse> getStats() {
+        return new ResponseEntity<>(fibonacciService.getStats(), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/rest/fibonacci/async/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody CompletableFuture<ResponseEntity<String>> getAsync(@PathVariable String id) {
         return CompletableFuture.supplyAsync(() -> {
