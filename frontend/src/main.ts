@@ -4,8 +4,9 @@ import axios from 'axios'
 import App from './App.vue'
 import Home from './views/Home.vue'
 import History from './views/History.vue'
+import './index.css'
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:9000'
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 const router = createRouter({
   history: createWebHistory(),

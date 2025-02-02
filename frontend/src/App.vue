@@ -1,49 +1,40 @@
 <template>
-  <div class="app">
-    <nav class="nav">
-      <router-link to="/" class="nav-link">Calculator</router-link>
-      <router-link to="/history" class="nav-link">History</router-link>
+  <div class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex">
+            <div class="flex-shrink-0 flex items-center">
+              <h1 class="text-xl font-bold text-gray-900">Fibonacci Calculator</h1>
+            </div>
+            <div class="ml-6 flex space-x-8">
+              <router-link 
+                to="/" 
+                class="inline-flex items-center px-1 pt-1 border-b-2 transition-colors"
+                :class="[$route.path === '/' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700']"
+              >
+                Calculator
+              </router-link>
+              <router-link 
+                to="/history" 
+                class="inline-flex items-center px-1 pt-1 border-b-2 transition-colors"
+                :class="[$route.path === '/history' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700']"
+              >
+                History
+              </router-link>
+            </div>
+          </div>
+        </div>
+      </div>
     </nav>
-    <router-view></router-view>
+
+    <main class="py-10">
+      <router-view></router-view>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useRoute } from 'vue-router'
+const route = useRoute()
 </script>
-
-<style>
-.app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 20px;
-  padding: 20px;
-}
-
-.nav {
-  padding: 20px 0;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.nav-link {
-  display: inline-block;
-  padding: 10px 20px;
-  color: #2c3e50;
-  text-decoration: none;
-  margin: 0 10px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.nav-link:hover {
-  background-color: #f5f5f5;
-}
-
-.router-link-active {
-  color: #42b983;
-  font-weight: bold;
-}
-</style>
