@@ -35,7 +35,11 @@ public class FibonacciCalculationResource {
 	private final Logger log = LoggerFactory
 			.getLogger(FibonacciCalculationResource.class);
 	
-	private final OptimizedFibonacciCalculator calculator = new OptimizedFibonacciCalculator();
+	private final FibonacciService fibonacciService;
+	
+	public FibonacciCalculationResource(FibonacciService fibonacciService) {
+		this.fibonacciService = fibonacciService;
+	}
 	
 	/**
 	 * GET /rest/fibonacci/:id -> get the "id" calucalation number.
@@ -50,7 +54,7 @@ public class FibonacciCalculationResource {
 		}
 		
 		try {
-			BigInteger result = calculator.calculate(Integer.parseInt(id));
+			BigInteger result = fibonacciService.calculateFibonacci(Integer.parseInt(id));
 			return new ResponseEntity<>(result.toString(), HttpStatus.OK);
 		} catch (Exception e) {
 			log.error("Error calculating Fibonacci number", e);
@@ -83,7 +87,7 @@ public class FibonacciCalculationResource {
 
         request.getNumbers().parallelStream().forEach(number -> {
             try {
-                results.put(number, calculator.calculate(number).toString());
+                results.put(number, fibonacciService.calculateFibonacci(number).toString());
             } catch (Exception e) {
                 errors.put(number, e.getMessage());
             }
@@ -103,7 +107,7 @@ public class FibonacciCalculationResource {
             }
 
             try {
-                BigInteger result = calculator.calculate(Integer.parseInt(id));
+                BigInteger result = fibonacciService.calculateFibonacci(Integer.parseInt(id));
                 return new ResponseEntity<>(result.toString(), HttpStatus.OK);
             } catch (Exception e) {
                 log.error("Error calculating Fibonacci number", e);
