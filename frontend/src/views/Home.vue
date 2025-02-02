@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import History from './History.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
@@ -86,6 +86,15 @@ const batchNumbers = ref('')
 const result = ref<string | Record<string, string>>('')
 const error = ref<string>('')
 const loading = ref(false)
+const cache = ref<Record<string, string>>({})
+
+// Load cache from localStorage on mount
+onMounted(() => {
+  const savedCache = localStorage.getItem('fibonacci-cache')
+  if (savedCache) {
+    cache.value = JSON.parse(savedCache)
+  }
+})
 
 const validateInput = (num: number): boolean => {
   if (isNaN(num)) {
@@ -118,8 +127,18 @@ const calculateFibonacci = async () => {
   result.value = ''
   
   try {
+    // Check client-side cache first
+    if (cache.value[num]) {
+      result.value = cache.value[num]
+      return
+    }
+    
     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/rest/fibonacci/${num}`)
     result.value = response.data
+    
+    // Update cache
+    cache.value[num] = response.data
+    localStorage.setItem('fibonacci-cache', JSON.stringify(cache.value))
   } catch (err: any) {
     error.value = err.response?.data || 'Error occurred during calculation'
   } finally {

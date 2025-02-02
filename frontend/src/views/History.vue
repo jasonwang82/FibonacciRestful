@@ -2,18 +2,18 @@
   <div class="max-w-4xl mx-auto px-4 py-8">
     <h2 class="text-2xl font-bold mb-8">Calculation History</h2>
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" role="region" aria-label="Performance Statistics">
       <div class="bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-gray-600 text-sm font-medium mb-2">Total Calculations</h3>
-        <div class="text-2xl font-bold text-blue-600">{{ stats.totalCalculations }}</div>
+        <h3 class="text-gray-600 text-sm font-medium mb-2" id="total-calc">Total Calculations</h3>
+        <div class="text-2xl font-bold text-blue-600" aria-labelledby="total-calc">{{ stats.totalCalculations }}</div>
       </div>
       <div class="bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-gray-600 text-sm font-medium mb-2">Cache Hit Rate</h3>
-        <div class="text-2xl font-bold text-green-600">{{ stats.cacheHitRate }}%</div>
+        <h3 class="text-gray-600 text-sm font-medium mb-2" id="cache-rate">Cache Hit Rate</h3>
+        <div class="text-2xl font-bold text-green-600" aria-labelledby="cache-rate">{{ stats.cacheHitRate }}%</div>
       </div>
       <div class="bg-white p-6 rounded-lg shadow-md">
-        <h3 class="text-gray-600 text-sm font-medium mb-2">Average Response Time</h3>
-        <div class="text-2xl font-bold text-purple-600">{{ stats.avgResponseTime }}ms</div>
+        <h3 class="text-gray-600 text-sm font-medium mb-2" id="avg-time">Average Response Time</h3>
+        <div class="text-2xl font-bold text-purple-600" aria-labelledby="avg-time">{{ stats.avgResponseTime }}ms</div>
       </div>
     </div>
 
@@ -23,15 +23,15 @@
     
     <ErrorAlert v-else-if="error" :message="error" />
     
-    <div v-else class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div v-else class="bg-white rounded-lg shadow-md overflow-hidden" role="region" aria-label="Calculation History">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
+        <table class="min-w-full divide-y divide-gray-200" role="table">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Input</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Execution Time</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Input</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Execution Time</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
