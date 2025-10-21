@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fibonacci 数列动画演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"] {
+            padding: 15px 25px;
+            font-size: 18px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            width: 200px;
+            transition: all 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        button {
+            padding: 15px 35px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(102, 126, 234, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #667eea;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-section {
+            margin-top: 30px;
+        }
+
+        .fibonacci-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .fib-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: scale(0.5) rotateY(180deg);
+            animation: cardAppear 0.6s forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fib-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes cardAppear {
+            to {
+                opacity: 1;
+                transform: scale(1) rotateY(0deg);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .fib-card .index {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .fib-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            word-break: break-all;
+        }
+
+        .formula-display {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            display: none;
+        }
+
+        .formula-display.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+            border: 1px solid #f5c6cb;
+        }
+
+        .error-message.active {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin-left: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .fibonacci-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 10px;
+            }
+
+            .fib-card {
+                padding: 15px;
+            }
+
+            .fib-card .value {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fibonacci 数列动画演示</h1>
+
+        <div class="info-box">
+            <strong>说明：</strong>输入一个正整数 n，系统将生成前 n 个 Fibonacci 数列，并以动画形式展示。
+            Fibonacci 数列规则：F(0) = 0, F(1) = 1, F(n) = F(n-1) + F(n-2)
+        </div>
+
+        <div class="input-section">
+            <input type="number" id="fibInput" placeholder="输入正整数" min="1" max="100" value="10">
+            <button id="calculateBtn" onclick="calculateFibonacci()">开始计算</button>
+            <button id="clearBtn" class="clear-btn" onclick="clearResults()">清除结果</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #667eea; font-weight: bold;">正在计算中...</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="formula-display" id="formulaDisplay"></div>
+
+        <div class="result-section">
+            <div class="fibonacci-grid" id="fibonacciGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let animationDelay = 0;
+
+        async function calculateFibonacci() {
+            const input = document.getElementById('fibInput');
+            const n = parseInt(input.value);
+
+            // 验证输入
+            if (isNaN(n) || n < 1) {
+                showError('请输入一个大于 0 的正整数');
+                return;
+            }
+
+            if (n > 100) {
+                showError('输入的数字不能大于 100');
+                return;
+            }
+
+            // 清除之前的结果
+            clearResults();
+
+            // 显示加载状态
+            const loading = document.getElementById('loading');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const clearBtn = document.getElementById('clearBtn');
+
+            loading.classList.add('active');
+            calculateBtn.disabled = true;
+            clearBtn.disabled = true;
+
+            try {
+                // 调用后端 API
+                const response = await fetch(`/v1/rest/fibonacci/${n}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.text();
+
+                // 解析返回的数据
+                const fibNumbers = data.trim().split(' ');
+
+                // 显示公式
+                showFormula(n);
+
+                // 动画显示结果
+                animateResults(fibNumbers);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('计算失败：' + error.message);
+            } finally {
+                loading.classList.remove('active');
+                calculateBtn.disabled = false;
+                clearBtn.disabled = false;
+            }
+        }
+
+        function showFormula(n) {
+            const formulaDisplay = document.getElementById('formulaDisplay');
+            formulaDisplay.innerHTML = `
+                <strong>Fibonacci 数列公式：</strong><br>
+                F(0) = 0, F(1) = 1<br>
+                F(n) = F(n-1) + F(n-2), 其中 n ≥ 2<br>
+                <strong>计算范围：</strong> F(0) 到 F(${n - 1})
+            `;
+            formulaDisplay.classList.add('active');
+        }
+
+        function animateResults(numbers) {
+            const grid = document.getElementById('fibonacciGrid');
+            animationDelay = 0;
+
+            numbers.forEach((num, index) => {
+                setTimeout(() => {
+                    const card = document.createElement('div');
+                    card.className = 'fib-card';
+                    card.style.animationDelay = '0s';
+                    card.innerHTML = `
+                        <div class="index">F(${index})</div>
+                        <div class="value">${num}</div>
+                    `;
+                    grid.appendChild(card);
+
+                    // 添加音效提示（可选）
+                    playSound();
+                }, animationDelay);
+
+                animationDelay += 150; // 每个卡片之间延迟 150ms
+            });
+        }
+
+        function playSound() {
+            // 创建简单的音效
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800 + Math.random() * 200;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        function clearResults() {
+            const grid = document.getElementById('fibonacciGrid');
+            const formulaDisplay = document.getElementById('formulaDisplay');
+            const errorMessage = document.getElementById('errorMessage');
+
+            grid.innerHTML = '';
+            formulaDisplay.classList.remove('active');
+            errorMessage.classList.remove('active');
+            animationDelay = 0;
+        }
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.classList.add('active');
+
+            setTimeout(() => {
+                errorMessage.classList.remove('active');
+            }, 5000);
+        }
+
+        // 支持回车键触发计算
+        document.getElementById('fibInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                calculateFibonacci();
+            }
+        });
+
+        // 页面加载完成后自动聚焦输入框
+        window.addEventListener('load', function() {
+            document.getElementById('fibInput').focus();
+        });
+    </script>
+</body>
+</html>
