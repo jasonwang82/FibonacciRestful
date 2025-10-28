@@ -1,120 +1,314 @@
-# Fibonacci Restful Service (a Rubicon Coding Question)
+# Fibonacci REST Service
 
-Fibonacci restful service is designed to be high-scaliablity service to quickly calculate Fibonacci. 
+A high-performance RESTful web service for calculating Fibonacci sequences using multi-threaded computation. Built with Spring Boot, this service provides fast and efficient Fibonacci number generation through parallel processing.
 
-### Fibonacci Algorithm
-Matrix exponentiation (fast)
-The algorithm is based on this innocent-looking identity (which can be proven by mathematical induction):
+## Features
+
+- **RESTful API** - Simple HTTP endpoints for Fibonacci calculations
+- **Multi-threaded Processing** - Utilizes parallel computation for efficient calculation
+- **Spring Boot** - Modern Spring Boot application with auto-configuration
+- **GZIP Compression** - Automatic response compression for optimized bandwidth
+- **Aspect-Oriented Logging** - Comprehensive logging with AOP
+- **Security** - Built-in Spring Security integration
+- **Profile Support** - Separate configurations for development and production environments
+- **Cloud Ready** - Spring Cloud integration for Cloud Foundry deployments
+- **CI/CD** - Azure Pipelines configuration included
+
+## Technology Stack
+
+- **Java 1.7**
+- **Spring Boot 1.2.0.RC1**
+- **Spring Framework** - Core, Web, Security, AOP
+- **Spring Cloud 1.1.0.RELEASE** - Cloud Foundry connector
+- **Maven 3.0+** - Build and dependency management
+- **Embedded Tomcat** - Application server
+- **Logback** - Logging framework
+- **Jackson** - JSON processing
+
+## Prerequisites
+
+- JDK 1.7 or higher
+- Maven 3.0 or higher
+
+## Installation & Configuration
+
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd fibonacci-rest-service
 ```
-[1 1]n  [F(n+1) F(n)  ]
-[1 0]  =[F(n)   F(n−1)].
-```
-It is important to use exponentiation by squaring with this algorithm, because otherwise it degenerates into the dynamic programming algorithm. This algorithm takes O(1) space and O(logn) operations. (Note: This is counted in terms of the number of bigint arithmetic operations, not primitive fixed-width operations.)
 
-So, that gives me a idea that the calculation could be sperated into smaller jobs to finish together.
-##### Related codes:
- * [FibonacciCoreCalucaltion](https://github.com/jasonwang82/FibonacciRestful/blob/master/src/main/java/com/emc/test/fibonacci/FibonacciCoreCalucaltion.java)
+### 2. Configuration Files
 
-### Infrastructure Design
-```
-             +-------------------------------------------------------+
-  Request    |                                                       |
-             |                                                       |
- +------------->                                                     |
-             |       HAProxy (Load Balance)                          |
-             +-----------+--------------------------------+----------+
-                         |  Compression                   |
-                         |                                |
-              +----------v----------+      +--------------v---------+
-              |                     |      |                        |
-              |                     |      |                        |
-              |                     |      |                        +---------------------+
-              |   spring container 1|...   |   spring container N   |                     |
-              |                     |      |                        |                     |
-              +-+-------------+-----+      +---------------+--------+                     |
-                |             |                            |                              |
-+-------------------------------------------------------------------------+  +------------v---------------+
-|               |             |                            |              |  |                            |
-|        +------v-----+ +-----v-----+               +------v---+     Heart Beat  +------------------+     |
-|        |            | |           |               |          <-----------------> Worker Queue     |     |
-|        |            | |           |               |          <----------------->                  |     |
-|        |  JVM1(Docker)| JVM2 (Docker)             |   JVM-N  |          |  |   +------------------+     |
-|        |            | |           |               |          |   start new one +------------------+     |
-|        |            | |           |               |          |    <-----+--+---+  AutoScaling     |     |
-|        +-^---------^+ +-----------+               +---^------+          |  |   |                  |     |
-|          |         |                                  |                 |  |   +------------------+     |
-|          |         |  Worker  Pool                    |                 |  |         Worker Monitor     |
-+----------+---------+----------------------------------------------------+  +----------------------------+
-          Map & Reduce                                  |
-           +         |                                  |
-           |         |                                  |
-    +------v-+      +v--------+      +---------+   +----v----+
-    |        +      |         |      |         |   |         |
-    | Job1 (Thread) | JobN (Thread)  |  Job    |   |  Job    |
-    |        |      |         |      |         |   |         |
-    +--------+      +---------+      +---------+   +---------+
+The application uses profile-based configuration:
 
+- **application.properties** - Base configuration for JVM parameters and execution timeouts
+- **application.yml** - Security and management settings
+- **application-dev.yml** - Development environment configuration
+- **application-prod.yml** - Production environment configuration
 
-```
-##### Notice
-* Load balance is not designed yet for this test. I would continously upgrade and improve project codes on that.
-* Each request comes from the load balance mechnisum and go through ***Spring container***. 
-* The restful services will check the number first and then once the validation is passed, then it will trigger a JVM (or docker). See [code](https://github.com/jasonwang82/FibonacciRestful/blob/master/src/main/java/com/emc/test/rest/FibonacciCalculationResource.java).
-* According to the max threadhold defined in the [properties](https://github.com/jasonwang82/FibonacciRestful/blob/master/src/main/resources/application.properties), JVM will start the counts of calculation jobs. The result of each jobs will be persisted to temp files. After all jobs are done, spring container will collect these in order and then output as ***compressed*** stream. The temp files will be ***deleted*** async.  See [Job Thread](https://github.com/jasonwang82/FibonacciRestful/blob/master/src/main/java/com/emc/test/fibonacci/FibonacciPartThread.java) and [Process](https://github.com/jasonwang82/FibonacciRestful/blob/master/src/main/java/com/emc/test/process/ProcessRunner.java). JVM will have a max maxheapsize (512m) for each run. So it prevent more JVM causing spring main process down.
-* Properties is defined in [HERE](https://github.com/jasonwang82/FibonacciRestful/blob/master/src/main/resources/application.properties). You can easily adjust JVM max heap size, task timeout (currently define 10 min), and report heart-beating.
-```
+### Key Configuration Properties
+
+Edit `src/main/resources/application.properties` to customize:
+
+```properties
 # JVM parameters
 jvm.parameters.maxheapsize=-Xmx512m
 
-# default timeout (10 * 60 * 1000) in millisecond for executing a specific task
+# Default timeout (15 minutes) in milliseconds
 task.execution.timeout.default=900000
 
-# the interval in millisecond for reporting the progress of the task
+# Progress report interval
 task.execution.progress.report.interval=10000
 ```
-* When the request has a big and time-consuming task, then it will ***enqueue*** worker to worker queue and the status is ***BUSY*** meaning it is running. Suppose while the working is running and another big task comes in, then enqueue worker into queue. The queue could know if it is suitable to extend to run in another machine. If yes, then queue will record this machine id and automatically starts another container to run JVM. If no, so mark its status as ***ENQUEUE*** meaning it is waiting for previous big task done. When the first task is done, then status is marked as ***COMPLETE***.If the task has problem and not finish, then the status is marked as ***ABORTED***. It is in second version I would post. The diagram above is what I am thinking to do.
 
-### How to Run
+## Running the Application
 
-You need install maven 3 before running:
+### Development Mode (Default)
 
-```sh
-$ mvn spring-boot:run
+```bash
+# Using Maven wrapper (Unix/Mac)
+./mvnw spring-boot:run
+
+# Using Maven wrapper (Windows)
+mvnw.cmd spring-boot:run
+
+# Using installed Maven
+mvn spring-boot:run
 ```
-Then you can GET http://localhost:9000/v1/rest/fibonacci/:id
 
-### Restful service Document 
-----
-  Returns string to represent the fibonacci result.
+The application will start with the `dev` profile by default and enable remote debugging on port 5005.
 
-* **URL**
+### Production Mode
 
-  http://localhost:9000/v1/rest/fibonacci/:id
+```bash
+mvn spring-boot:run -Pprod
+```
 
-* **Method:**
+Or with command-line arguments:
 
-  `GET`
-  
-*  **URL Params**
+```bash
+java -jar target/fibonacci-0.0.1-SNAPSHOT.war --spring.profiles.active=prod
+```
 
-   **Required:**
- 
-   `id=[integer]`
+### Building for Deployment
 
-* **Header Params**
+```bash
+# Development build
+mvn clean package
 
-  None. 
-  
-  If you specify following parameter, then the content will be ***gzip*** through transportation layer. 
+# Production build
+mvn clean package -Pprod
+```
 
-  `Accept-Encoding = true`
+The WAR file will be generated in the `target/` directory.
 
-* **Success Response:**
+## API Endpoints
 
-  * **Code:** 200 <br />
-    **Content:** `0 1 1 2 3 5 ...`
- 
-* **Error Paramaters:**
+### Calculate Fibonacci Sequence
 
-  * **Code:** 400 <br />
-    **Content:** `Invalid number - :id`
+**Endpoint:** `GET /v1/rest/fibonacci/{n}`
+
+**Description:** Calculate and return the first N Fibonacci numbers.
+
+**Parameters:**
+- `n` (path parameter) - The count of Fibonacci numbers to generate (must be a positive integer)
+
+**Success Response:**
+- **Code:** 200 OK
+- **Content:** Space-separated Fibonacci numbers
+- **Example:** `0 1 1 2 3 5 8 13 21 34`
+
+**Error Responses:**
+
+- **Code:** 400 BAD REQUEST
+  - **Content:** `Invalid number - {n}`
+  - **Condition:** When n is not a valid positive integer
+
+- **Code:** 408 REQUEST TIMEOUT
+  - **Content:** `Please contact administrator.`
+  - **Condition:** When calculation exceeds timeout threshold
+
+- **Code:** 500 INTERNAL SERVER ERROR
+  - **Content:** `Please contact administrator.`
+  - **Condition:** When an unexpected error occurs
+
+### Example Requests
+
+```bash
+# Calculate first 10 Fibonacci numbers
+curl http://localhost:8080/v1/rest/fibonacci/10
+
+# Response: 0 1 1 2 3 5 8 13 21 34
+
+# Calculate first 20 Fibonacci numbers
+curl http://localhost:8080/v1/rest/fibonacci/20
+```
+
+## Project Structure
+
+```
+src/
+├── main/
+│   ├── java/com/emc/test/
+│   │   ├── FibonacciRestServiceApplication.java    # Main application class
+│   │   ├── ServletInitializer.java                 # WAR deployment initializer
+│   │   ├── common/                                 # Common utilities and exceptions
+│   │   │   ├── BaseException.java
+│   │   │   ├── SystemException.java
+│   │   │   ├── Consts.java                        # Application constants
+│   │   │   └── utils/                             # Utility classes
+│   │   │       ├── ConfigurationUtils.java
+│   │   │       ├── JSONReadWriteHelper.java
+│   │   │       └── NioFileSystemUtils.java
+│   │   ├── config/                                # Spring configuration
+│   │   │   └── WebConfigurer.java
+│   │   ├── fibonacci/                             # Fibonacci calculation logic
+│   │   │   ├── AtomicFloat.java
+│   │   │   ├── FibonacciCoreCalucaltion.java
+│   │   │   └── FibonacciPartThread.java          # Multi-threaded processor
+│   │   ├── filter/                                # Servlet filters
+│   │   │   ├── GZipServletFilter.java            # GZIP compression
+│   │   │   ├── GZipResponseUtil.java
+│   │   │   ├── GZipServletOutputStream.java
+│   │   │   └── GZipServletResponseWrapper.java
+│   │   ├── logging/                               # AOP logging
+│   │   │   └── LoggingAspect.java
+│   │   ├── process/                               # Process execution
+│   │   │   └── ProcessRunner.java
+│   │   └── rest/                                  # REST controllers
+│   │       └── FibonacciCalculationResource.java
+│   └── resources/
+│       ├── application.properties
+│       └── config/
+│           ├── application.yml
+│           ├── application-dev.yml
+│           └── application-prod.yml
+└── test/
+    └── java/com/emc/test/
+        └── FibonacciRestServiceApplicationTests.java
+```
+
+## Architecture
+
+### Multi-threaded Calculation
+
+The application uses a sophisticated multi-threading approach:
+
+1. **Request Processing** - REST endpoint receives the request
+2. **Thread Pool Creation** - Creates a pool of threads based on the calculation size
+3. **Parallel Computation** - Each thread calculates a portion of the sequence
+4. **Result Aggregation** - Results are written to temporary files and aggregated
+5. **Cleanup** - Temporary files are removed after response is sent
+
+### Thread Distribution
+
+- Calculations are divided into chunks based on `MAX_THREADHOLD` constant
+- Each thread processes a portion of the sequence independently
+- Results are synchronized using atomic operations and file I/O
+
+## Profiles
+
+### Development Profile (`dev`)
+
+- Debug logging level
+- Remote debugging enabled (port 5005)
+- Detailed error messages
+
+### Production Profile (`prod`)
+
+- Info logging level
+- Optimized for performance
+- Reduced verbosity
+
+## Testing
+
+Run the test suite:
+
+```bash
+mvn test
+```
+
+Run tests with coverage:
+
+```bash
+mvn clean verify
+```
+
+## Building & Deployment
+
+### Maven Commands
+
+```bash
+# Clean build
+mvn clean install
+
+# Skip tests
+mvn clean install -DskipTests
+
+# Build WAR file
+mvn clean package
+
+# Run with specific profile
+mvn spring-boot:run -Dspring.profiles.active=prod
+```
+
+### Deployment Options
+
+1. **Standalone WAR** - Deploy to any servlet container (Tomcat, Jetty, etc.)
+2. **Embedded Server** - Run as executable WAR with embedded Tomcat
+3. **Cloud Foundry** - Push to Cloud Foundry platform
+4. **Azure** - Use included Azure Pipelines configuration
+
+## Performance Considerations
+
+- **JVM Heap Size**: Default is 512MB, adjust `jvm.parameters.maxheapsize` as needed
+- **Execution Timeout**: Default is 15 minutes, configurable via `task.execution.timeout.default`
+- **Thread Pool**: Automatically sized based on calculation requirements
+- **GZIP Compression**: Enabled by default for bandwidth optimization
+
+## Logging
+
+The application uses Logback for logging with AOP-based method-level logging:
+
+- **Debug Mode**: Detailed execution logs including method entry/exit
+- **Production Mode**: Error and info level logs only
+- **Performance Tracking**: Execution time tracking for calculations
+
+## Security
+
+- Spring Security is integrated but basic auth is disabled by default
+- Management endpoints are accessible without authentication
+- Configure security settings in `application.yml`
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Port Already in Use**
+   - Default port is 8080, change via `server.port` property
+
+2. **Out of Memory Errors**
+   - Increase heap size in `application.properties`
+   - Reduce calculation size or increase timeout
+
+3. **Timeout Errors**
+   - Increase `task.execution.timeout.default` for larger calculations
+   - Consider optimizing thread pool size
+
+## License
+
+Copyright © EMC Corporation
+
+## Author
+
+Jason.Wang
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
